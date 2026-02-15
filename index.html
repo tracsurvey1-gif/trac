@@ -26,6 +26,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
+        /* Clean Header - Ensures no unwanted text appears here */
         .header {
             background: #4CAF50;
             color: white;
@@ -332,6 +333,7 @@
         
         input.invalid {
             border-color: #f44336;
+            background-color: #fff0f0;
         }
     </style>
 </head>
@@ -365,13 +367,17 @@
             
             <div class="field">
                 <label for="mobile1">Mobile Number 1 (WhatsApp) *</label>
-                <input type="tel" id="mobile1" name="mobile1" placeholder="10 digit number" required maxlength="10" oninput="validateMobile(this)" onblur="checkMobileLength(this)">
+                <input type="tel" id="mobile1" name="mobile1" placeholder="10 digit number" 
+                       required maxlength="10" minlength="10" pattern="\d{10}"
+                       oninput="validateMobile(this)" onblur="checkMobileLength(this)">
                 <div class="error-msg" id="mobile1Error">Must be exactly 10 digits</div>
             </div>
             
             <div class="field">
                 <label for="mobile2">Mobile Number 2</label>
-                <input type="tel" id="mobile2" name="mobile2" placeholder="10 digit number (optional)" maxlength="10" oninput="validateMobile(this)" onblur="checkMobileLength(this, true)">
+                <input type="tel" id="mobile2" name="mobile2" placeholder="10 digit number (optional)" 
+                       maxlength="10" minlength="10" pattern="\d{10}"
+                       oninput="validateMobile(this)" onblur="checkMobileLength(this, true)">
                 <div class="error-msg" id="mobile2Error">Must be exactly 10 digits</div>
             </div>
             
@@ -445,7 +451,7 @@
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p>Uploading photos and saving data...</p>
-            <p style="font-size: 12px; color: #666; margin-top: 10px;">This may take a minute for large photos</p>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">Do not close this window.</p>
         </div>
         
         <div class="success" id="success">
@@ -459,6 +465,7 @@
     <script>
         // REPLACE WITH YOUR NEW REDEPLOYED APPS SCRIPT URL
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYV9G2qqbCfUStVlLFs3BDoK9zq049ncWExqHfaFVj6jF0EKTzD3anpQreA2S15DtV5w/exec';
+        
         // Speech recognition setup
         let recognition = null;
         let isListening = false;
@@ -478,14 +485,12 @@
             
             recognition.onresult = function(event) {
                 let finalTranscript = '';
-                
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
                         finalTranscript += transcript;
                     }
                 }
-                
                 const commentsField = document.getElementById('comments');
                 if (finalTranscript) {
                     const currentText = commentsField.value;
@@ -512,7 +517,6 @@
                 alert('Speech recognition not supported on this device');
                 return;
             }
-            
             if (isListening) {
                 recognition.stop();
             } else {
@@ -530,19 +534,27 @@
             document.getElementById('speechStatus').textContent = '';
         }
         
-        // Mobile number validation - only allow digits
+        // STRICT MOBILE VALIDATION
         function validateMobile(input) {
-            input.value = input.value.replace(/\D/g, '').slice(0, 10);
-            input.classList.remove('invalid');
-            document.getElementById(input.id + 'Error').classList.remove('show');
+            // Remove any non-numeric characters immediately
+            input.value = input.value.replace(/\D/g, '');
+            // Strictly cut off anything after 10 digits
+            if (input.value.length > 10) {
+                input.value = input.value.slice(0, 10);
+            }
+            
+            // Visual feedback
+            const errorEl = document.getElementById(input.id + 'Error');
+            if (input.value.length === 10) {
+                input.classList.remove('invalid');
+                errorEl.classList.remove('show');
+            }
         }
         
-        // Check exact length on blur
         function checkMobileLength(input, isOptional = false) {
             const errorEl = document.getElementById(input.id + 'Error');
             
-            if (input.value.length === 0 && isOptional) {
-                // Empty and optional - OK
+            if (isOptional && input.value.length === 0) {
                 input.classList.remove('invalid');
                 errorEl.classList.remove('show');
                 return true;
@@ -593,27 +605,23 @@
             }
         }
         
-        // Convert file to base64
-        function getBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-        
         // Form submit
         document.getElementById('surveyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Validate mobile numbers
-            const mobile1Valid = checkMobileLength(document.getElementById('mobile1'));
-            const mobile2Val = document.getElementById('mobile2').value;
-            const mobile2Valid = mobile2Val === '' || checkMobileLength(document.getElementById('mobile2'), true);
+            // Validate mobile numbers strictly before starting
+            const m1 = document.getElementById('mobile1');
+            const m2 = document.getElementById('mobile2');
             
-            if (!mobile1Valid || !mobile2Valid) {
-                alert('Please enter valid 10-digit mobile numbers');
+            if (!checkMobileLength(m1)) {
+                alert('Mobile Number 1 must be exactly 10 digits.');
+                m1.focus();
+                return;
+            }
+            
+            if (m2.value.length > 0 && !checkMobileLength(m2, true)) {
+                alert('Mobile Number 2 must be exactly 10 digits.');
+                m2.focus();
                 return;
             }
             
@@ -627,7 +635,7 @@
             document.getElementById('surveyForm').style.display = 'none';
             
             try {
-                // Compress photos before sending
+                // Compress photos
                 const photo1 = await compressImage(document.getElementById('photo1').files[0]);
                 const photo2 = await compressImage(document.getElementById('photo2').files[0]);
                 const photo3 = await compressImage(document.getElementById('photo3').files[0]);
@@ -648,16 +656,22 @@
                     photo4: photo4
                 };
                 
-                // Use fetch with mode: 'cors'
+                // Add Timeout to Fetch to prevent "Keeping Loading" forever
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'cors',
+                    signal: controller.signal,
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(data)
                 });
                 
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
                     throw new Error('Server error: ' + response.status);
                 }
@@ -667,20 +681,28 @@
                 if (result.status === 'success') {
                     document.getElementById('loading').classList.remove('active');
                     document.getElementById('success').classList.add('active');
+                    window.scrollTo(0,0);
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Unknown server error');
                 }
                 
             } catch (error) {
                 console.error('Submit error:', error);
-                alert('Error: ' + error.message + '\n\nPlease check your internet connection and try again.');
+                
+                let errorMsg = error.message;
+                if (error.name === 'AbortError') {
+                    errorMsg = "Request timed out. Please check your internet connection.";
+                }
+                
+                alert('Submission Failed: ' + errorMsg + '\n\nPlease try again.');
+                
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('surveyForm').style.display = 'block';
                 document.getElementById('submitBtn').disabled = false;
             }
         });
         
-        // Compress image to reduce size
+        // Compress image with error handling
         function compressImage(file) {
             return new Promise((resolve, reject) => {
                 if (!file) {
@@ -695,8 +717,9 @@
                     img.src = event.target.result;
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1200;
-                        const MAX_HEIGHT = 1200;
+                        // Reduced max dimension to 1024 for faster upload
+                        const MAX_WIDTH = 1024;
+                        const MAX_HEIGHT = 1024;
                         let width = img.width;
                         let height = img.height;
                         
@@ -717,13 +740,19 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // Compress to 80% quality JPEG
-                        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                        // Compress to 70% quality JPEG
+                        const compressed = canvas.toDataURL('image/jpeg', 0.7);
                         resolve(compressed);
                     };
-                    img.onerror = reject;
+                    img.onerror = () => {
+                        console.error("Image load error");
+                        resolve(null); // Resolve null rather than crash
+                    };
                 };
-                reader.onerror = reject;
+                reader.onerror = error => {
+                    console.error("File read error");
+                    reject(error);
+                };
             });
         }
         
