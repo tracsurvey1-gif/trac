@@ -38,11 +38,6 @@
             margin-bottom: 8px;
         }
         
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-        
         .form {
             padding: 24px;
         }
@@ -265,7 +260,6 @@
             font-size: 32px;
         }
         
-        /* Speech to text styles */
         .comment-box {
             position: relative;
         }
@@ -324,13 +318,27 @@
             margin-top: 4px;
             height: 18px;
         }
+        
+        .error-msg {
+            color: #f44336;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .error-msg.show {
+            display: block;
+        }
+        
+        input.invalid {
+            border-color: #f44336;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🚜 Tractor Survey</h1>
-            <p>Internal Equipment Documentation</p>
         </div>
         
         <form class="form" id="surveyForm">
@@ -357,12 +365,14 @@
             
             <div class="field">
                 <label for="mobile1">Mobile Number 1 (WhatsApp) *</label>
-                <input type="tel" id="mobile1" name="mobile1" pattern="[0-9]{10}" placeholder="10 digit number" required>
+                <input type="tel" id="mobile1" name="mobile1" placeholder="10 digit number" required maxlength="10" oninput="validateMobile(this)" onblur="checkMobileLength(this)">
+                <div class="error-msg" id="mobile1Error">Must be exactly 10 digits</div>
             </div>
             
             <div class="field">
                 <label for="mobile2">Mobile Number 2</label>
-                <input type="tel" id="mobile2" name="mobile2" pattern="[0-9]{10}" placeholder="10 digit number (optional)">
+                <input type="tel" id="mobile2" name="mobile2" placeholder="10 digit number (optional)" maxlength="10" oninput="validateMobile(this)" onblur="checkMobileLength(this, true)">
+                <div class="error-msg" id="mobile2Error">Must be exactly 10 digits</div>
             </div>
             
             <div class="field">
@@ -435,6 +445,7 @@
         <div class="loading" id="loading">
             <div class="spinner"></div>
             <p>Uploading photos and saving data...</p>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">This may take a minute for large photos</p>
         </div>
         
         <div class="success" id="success">
@@ -446,20 +457,18 @@
     </div>
 
     <script>
-        // REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSF_iPdBFWARbPB0zvcZAf5fkIkVNvARzy_vwLXiFe76-RUN-Ze0N5oUhqgArB75SOHw/exec';
-        
+        // REPLACE WITH YOUR NEW REDEPLOYED APPS SCRIPT URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYV9G2qqbCfUStVlLFs3BDoK9zq049ncWExqHfaFVj6jF0EKTzD3anpQreA2S15DtV5w/exec';
         // Speech recognition setup
         let recognition = null;
         let isListening = false;
         
-        // Initialize speech recognition
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'en-IN'; // Change to 'hi-IN' for Hindi
+            recognition.lang = 'en-IN';
             
             recognition.onstart = function() {
                 isListening = true;
@@ -469,14 +478,11 @@
             
             recognition.onresult = function(event) {
                 let finalTranscript = '';
-                let interimTranscript = '';
                 
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
                         finalTranscript += transcript;
-                    } else {
-                        interimTranscript += transcript;
                     }
                 }
                 
@@ -522,6 +528,35 @@
             isListening = false;
             document.getElementById('micBtn').classList.remove('listening');
             document.getElementById('speechStatus').textContent = '';
+        }
+        
+        // Mobile number validation - only allow digits
+        function validateMobile(input) {
+            input.value = input.value.replace(/\D/g, '').slice(0, 10);
+            input.classList.remove('invalid');
+            document.getElementById(input.id + 'Error').classList.remove('show');
+        }
+        
+        // Check exact length on blur
+        function checkMobileLength(input, isOptional = false) {
+            const errorEl = document.getElementById(input.id + 'Error');
+            
+            if (input.value.length === 0 && isOptional) {
+                // Empty and optional - OK
+                input.classList.remove('invalid');
+                errorEl.classList.remove('show');
+                return true;
+            }
+            
+            if (input.value.length !== 10) {
+                input.classList.add('invalid');
+                errorEl.classList.add('show');
+                return false;
+            } else {
+                input.classList.remove('invalid');
+                errorEl.classList.remove('show');
+                return true;
+            }
         }
         
         // Get GPS on load
@@ -572,6 +607,16 @@
         document.getElementById('surveyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // Validate mobile numbers
+            const mobile1Valid = checkMobileLength(document.getElementById('mobile1'));
+            const mobile2Val = document.getElementById('mobile2').value;
+            const mobile2Valid = mobile2Val === '' || checkMobileLength(document.getElementById('mobile2'), true);
+            
+            if (!mobile1Valid || !mobile2Valid) {
+                alert('Please enter valid 10-digit mobile numbers');
+                return;
+            }
+            
             // Stop speech if active
             if (isListening && recognition) {
                 recognition.stop();
@@ -582,11 +627,11 @@
             document.getElementById('surveyForm').style.display = 'none';
             
             try {
-                // Get photos as base64
-                const photo1 = document.getElementById('photo1').files[0];
-                const photo2 = document.getElementById('photo2').files[0];
-                const photo3 = document.getElementById('photo3').files[0];
-                const photo4 = document.getElementById('photo4').files[0];
+                // Compress photos before sending
+                const photo1 = await compressImage(document.getElementById('photo1').files[0]);
+                const photo2 = await compressImage(document.getElementById('photo2').files[0]);
+                const photo3 = await compressImage(document.getElementById('photo3').files[0]);
+                const photo4 = await compressImage(document.getElementById('photo4').files[0]);
                 
                 const data = {
                     name: document.getElementById('name').value,
@@ -597,49 +642,97 @@
                     mobile2: document.getElementById('mobile2').value,
                     type: document.querySelector('input[name="type"]:checked').value,
                     comments: document.getElementById('comments').value,
-                    photo1: photo1 ? await getBase64(photo1) : null,
-                    photo2: photo2 ? await getBase64(photo2) : null,
-                    photo3: photo3 ? await getBase64(photo3) : null,
-                    photo4: photo4 ? await getBase64(photo4) : null
+                    photo1: photo1,
+                    photo2: photo2,
+                    photo3: photo3,
+                    photo4: photo4
                 };
                 
-                // Use XMLHttpRequest for better compatibility
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', SCRIPT_URL, true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
+                // Use fetch with mode: 'cors'
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
                 
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        const result = JSON.parse(xhr.responseText);
-                        if (result.status === 'success') {
-                            document.getElementById('loading').classList.remove('active');
-                            document.getElementById('success').classList.add('active');
-                        } else {
-                            throw new Error(result.message);
-                        }
-                    } else {
-                        throw new Error('Server error: ' + xhr.status);
-                    }
-                };
+                if (!response.ok) {
+                    throw new Error('Server error: ' + response.status);
+                }
                 
-                xhr.onerror = function() {
-                    throw new Error('Network error - check internet connection');
-                };
+                const result = await response.json();
                 
-                xhr.send(JSON.stringify(data));
+                if (result.status === 'success') {
+                    document.getElementById('loading').classList.remove('active');
+                    document.getElementById('success').classList.add('active');
+                } else {
+                    throw new Error(result.message);
+                }
                 
             } catch (error) {
-                alert('Error: ' + error.message);
+                console.error('Submit error:', error);
+                alert('Error: ' + error.message + '\n\nPlease check your internet connection and try again.');
                 document.getElementById('loading').classList.remove('active');
                 document.getElementById('surveyForm').style.display = 'block';
                 document.getElementById('submitBtn').disabled = false;
             }
         });
         
+        // Compress image to reduce size
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                if (!file) {
+                    resolve(null);
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1200;
+                        const MAX_HEIGHT = 1200;
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Compress to 80% quality JPEG
+                        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                        resolve(compressed);
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+        
         function resetForm() {
             document.getElementById('surveyForm').reset();
             document.querySelectorAll('.photo-input').forEach(el => el.classList.remove('has-image'));
             document.querySelectorAll('.photo-preview').forEach(el => el.src = '');
+            document.querySelectorAll('input').forEach(el => el.classList.remove('invalid'));
+            document.querySelectorAll('.error-msg').forEach(el => el.classList.remove('show'));
             document.getElementById('success').classList.remove('active');
             document.getElementById('surveyForm').style.display = 'block';
             document.getElementById('submitBtn').disabled = false;
