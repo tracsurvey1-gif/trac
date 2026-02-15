@@ -21,13 +21,17 @@
         input[type="radio"] { width: 18px; height: 18px; accent-color: #4CAF50; }
         .photo-section { margin-bottom: 20px; }
         .photo-label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; font-size: 14px; }
-        .photo-input { position: relative; width: 100%; height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        
+        /* UPDATED PHOTO INPUT STYLE */
+        .photo-input { position: relative; width: 100%; height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; overflow: hidden; }
         .photo-input:hover { border-color: #4CAF50; background: #f8fff8; }
         .photo-input.has-image { border-color: #4CAF50; background: #e8f5e9; }
-        .photo-input input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        /* Make the input cover the entire div so it catches the click directly */
+        .photo-input input { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; z-index: 10; }
+        
         .photo-icon { font-size: 32px; margin-bottom: 8px; }
         .photo-text { color: #666; font-size: 14px; }
-        .photo-preview { position: absolute; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: none; }
+        .photo-preview { position: absolute; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: none; z-index: 5; }
         .photo-input.has-image .photo-preview { display: block; }
         .photo-input.has-image .photo-icon, .photo-input.has-image .photo-text { display: none; }
         .gps-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #e3f2fd; color: #1976d2; border-radius: 20px; font-size: 12px; margin-top: 6px; }
@@ -126,7 +130,7 @@
             
             <div class="photo-section">
                 <label class="photo-label">Photo 1: Front View *</label>
-                <div class="photo-input" onclick="document.getElementById('photo1').click()">
+                <div class="photo-input">
                     <input type="file" id="photo1" accept="image/*" capture="environment" required onchange="previewPhoto(this, 1)">
                     <img class="photo-preview" id="preview1">
                     <div class="photo-icon">📷</div>
@@ -136,7 +140,7 @@
             
             <div class="photo-section">
                 <label class="photo-label">Photo 2: Left Tyre *</label>
-                <div class="photo-input" onclick="document.getElementById('photo2').click()">
+                <div class="photo-input">
                     <input type="file" id="photo2" accept="image/*" capture="environment" required onchange="previewPhoto(this, 2)">
                     <img class="photo-preview" id="preview2">
                     <div class="photo-icon">📷</div>
@@ -146,7 +150,7 @@
             
             <div class="photo-section">
                 <label class="photo-label">Photo 3: Right Tyre *</label>
-                <div class="photo-input" onclick="document.getElementById('photo3').click()">
+                <div class="photo-input">
                     <input type="file" id="photo3" accept="image/*" capture="environment" required onchange="previewPhoto(this, 3)">
                     <img class="photo-preview" id="preview3">
                     <div class="photo-icon">📷</div>
@@ -156,7 +160,7 @@
             
             <div class="photo-section">
                 <label class="photo-label">Photo 4: Selfie with Customer *</label>
-                <div class="photo-input" onclick="document.getElementById('photo4').click()">
+                <div class="photo-input">
                     <input type="file" id="photo4" accept="image/*" capture="user" required onchange="previewPhoto(this, 4)">
                     <img class="photo-preview" id="preview4">
                     <div class="photo-icon">🤳</div>
@@ -182,7 +186,7 @@
     </div>
 
     <script>
-        // REPLACE WITH YOUR NEW REDEPLOYED APPS SCRIPT URL
+        // UPDATED SCRIPT URL
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfBCZOYWucJqrEFpu7STJqYk9fCCr9vSnjPxJg2GdEYFjigNEJ9u0HxHYRhKEc31gsbg/exec';
         
         // Speech recognition setup
@@ -253,7 +257,6 @@
             document.getElementById('speechStatus').textContent = '';
         }
         
-        // STRICT MOBILE VALIDATION
         function validateMobile(input) {
             input.value = input.value.replace(/\D/g, '');
             if (input.value.length > 10) {
@@ -284,7 +287,6 @@
             }
         }
         
-        // Get GPS
         window.onload = function() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
@@ -306,7 +308,6 @@
             }
         };
         
-        // Photo preview
         function previewPhoto(input, num) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -318,7 +319,6 @@
             }
         }
         
-        // Form submit
         document.getElementById('surveyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -368,9 +368,6 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-                // FIX FOR CORS ERROR:
-                // We must use 'text/plain' as content type to avoid Preflight (OPTIONS) check.
-                // Google Apps Script will still receive the body as a string.
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     signal: controller.signal,
