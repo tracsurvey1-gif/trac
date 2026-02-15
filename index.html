@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -121,11 +121,11 @@
             <div class="field">
                 <label for="comments">Comments</label>
                 <div class="comment-box">
-                    <textarea id="comments" name="comments" placeholder="Type here or tap microphone to speak..." style="padding-bottom: 50px;"></textarea>
+                    <textarea id="comments" name="comments" placeholder="Tap microphone to speak..."></textarea>
                     <button type="button" class="mic-btn" id="micBtn" onclick="toggleSpeech()" title="Tap to speak">🎤</button>
                 </div>
                 <div class="speech-status" id="speechStatus"></div>
-                <div class="mic-hint">💡 Tap microphone to speak (Auto-Language)</div>
+                <div class="mic-hint">💡 Supports Hindi, Marathi & English (Mixed)</div>
             </div>
             
             <div class="photo-section">
@@ -197,8 +197,9 @@
             recognition.continuous = true;
             recognition.interimResults = false; 
             
-            // REMOVED 'recognition.lang' SETTING
-            // This forces the browser to use the device's default auto-detect behavior
+            // OPTION 1: FORCED HINDI (Works like your old app)
+            // This captures Hindi and Marathi well, and usually catches English words too.
+            recognition.lang = 'hi-IN'; 
             
             recognition.onstart = function() {
                 isListening = true;
