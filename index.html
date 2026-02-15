@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tractor Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: #4CAF50;
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .form {
+            padding: 24px;
+        }
+        
+        .field {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        input[type="text"],
+        input[type="tel"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4CAF50;
+        }
+        
+        .photo-section {
+            margin-bottom: 20px;
+        }
+        
+        .photo-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .photo-input {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .photo-input:hover {
+            border-color: #4CAF50;
+            background: #f8fff8;
+        }
+        
+        .photo-input.has-image {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        
+        .photo-input input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .photo-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .photo-text {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .photo-preview {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .photo-input.has-image .photo-preview {
+            display: block;
+        }
+        
+        .photo-input.has-image .photo-icon,
+        .photo-input.has-image .photo-text {
+            display: none;
+        }
+        
+        .gps-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+        
+        .gps-status.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .gps-status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:hover {
+            background: #45a049;
+        }
+        
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .success {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .success.active {
+            display: block;
+        }
+        
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 32px;
+        }
+        
+        /* Speech to text styles */
+        .comment-box {
+            position: relative;
+        }
+        
+        .mic-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #4CAF50;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .mic-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+        
+        .mic-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .mic-btn.listening {
+            background: #f44336;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        
+        .mic-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .speech-status {
+            font-size: 12px;
+            color: #4CAF50;
+            margin-top: 4px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚜 Tractor Survey</h1>
+            <p>Internal Equipment Documentation</p>
+        </div>
+        
+        <form class="form" id="surveyForm">
+            <div class="field">
+                <label for="name">Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="field">
+                <label for="address">Address *</label>
+                <textarea id="address" name="address" required></textarea>
+            </div>
+            
+            <div class="field">
+                <label for="village">Village *</label>
+                <input type="text" id="village" name="village" required>
+            </div>
+            
+            <div class="field">
+                <label>GPS Coordinates *</label>
+                <div id="gpsStatus" class="gps-status">📍 Getting location...</div>
+                <input type="hidden" id="gps" name="gps" required>
+            </div>
+            
+            <div class="field">
+                <label for="mobile1">Mobile Number 1 (WhatsApp) *</label>
+                <input type="tel" id="mobile1" name="mobile1" pattern="[0-9]{10}" placeholder="10 digit number" required>
+            </div>
+            
+            <div class="field">
+                <label for="mobile2">Mobile Number 2</label>
+                <input type="tel" id="mobile2" name="mobile2" pattern="[0-9]{10}" placeholder="10 digit number (optional)">
+            </div>
+            
+            <div class="field">
+                <label>Original/Remould *</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="type" value="Original" required>
+                        Original
+                    </label>
+                    <label>
+                        <input type="radio" name="type" value="Remould" required>
+                        Remould
+                    </label>
+                </div>
+            </div>
+            
+            <div class="field">
+                <label for="comments">Comments</label>
+                <div class="comment-box">
+                    <textarea id="comments" name="comments" placeholder="Type here or tap microphone to speak..." style="padding-bottom: 50px;"></textarea>
+                    <button type="button" class="mic-btn" id="micBtn" onclick="toggleSpeech()" title="Tap to speak">🎤</button>
+                </div>
+                <div class="speech-status" id="speechStatus"></div>
+                <div class="mic-hint">💡 Tap the microphone button to use voice input</div>
+            </div>
+            
+            <div class="photo-section">
+                <label class="photo-label">Photo 1: Front View *</label>
+                <div class="photo-input" onclick="document.getElementById('photo1').click()">
+                    <input type="file" id="photo1" accept="image/*" capture="environment" required onchange="previewPhoto(this, 1)">
+                    <img class="photo-preview" id="preview1">
+                    <div class="photo-icon">📷</div>
+                    <div class="photo-text">Tap to capture photo</div>
+                </div>
+            </div>
+            
+            <div class="photo-section">
+                <label class="photo-label">Photo 2: Left Tyre *</label>
+                <div class="photo-input" onclick="document.getElementById('photo2').click()">
+                    <input type="file" id="photo2" accept="image/*" capture="environment" required onchange="previewPhoto(this, 2)">
+                    <img class="photo-preview" id="preview2">
+                    <div class="photo-icon">📷</div>
+                    <div class="photo-text">Tap to capture photo</div>
+                </div>
+            </div>
+            
+            <div class="photo-section">
+                <label class="photo-label">Photo 3: Right Tyre *</label>
+                <div class="photo-input" onclick="document.getElementById('photo3').click()">
+                    <input type="file" id="photo3" accept="image/*" capture="environment" required onchange="previewPhoto(this, 3)">
+                    <img class="photo-preview" id="preview3">
+                    <div class="photo-icon">📷</div>
+                    <div class="photo-text">Tap to capture photo</div>
+                </div>
+            </div>
+            
+            <div class="photo-section">
+                <label class="photo-label">Photo 4: Selfie with Customer *</label>
+                <div class="photo-input" onclick="document.getElementById('photo4').click()">
+                    <input type="file" id="photo4" accept="image/*" capture="user" required onchange="previewPhoto(this, 4)">
+                    <img class="photo-preview" id="preview4">
+                    <div class="photo-icon">🤳</div>
+                    <div class="photo-text">Tap to take selfie</div>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">Submit Survey</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Uploading photos and saving data...</p>
+        </div>
+        
+        <div class="success" id="success">
+            <div class="success-icon">✓</div>
+            <h2>Survey Submitted!</h2>
+            <p>Data saved successfully.</p>
+            <button onclick="resetForm()" class="submit-btn" style="margin-top: 20px;">Submit Another</button>
+        </div>
+    </div>
+
+    <script>
+        // REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSF_iPdBFWARbPB0zvcZAf5fkIkVNvARzy_vwLXiFe76-RUN-Ze0N5oUhqgArB75SOHw/exec';
+        
+        // Speech recognition setup
+        let recognition = null;
+        let isListening = false;
+        
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-IN'; // Change to 'hi-IN' for Hindi
+            
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('micBtn').classList.add('listening');
+                document.getElementById('speechStatus').textContent = 'Listening... Speak now';
+            };
+            
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                let interimTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                const commentsField = document.getElementById('comments');
+                if (finalTranscript) {
+                    const currentText = commentsField.value;
+                    commentsField.value = currentText + (currentText ? ' ' : '') + finalTranscript;
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                document.getElementById('speechStatus').textContent = 'Error: ' + event.error;
+                stopListening();
+            };
+            
+            recognition.onend = function() {
+                stopListening();
+            };
+        } else {
+            document.getElementById('micBtn').style.display = 'none';
+            document.getElementById('speechStatus').textContent = 'Speech not supported on this browser';
+        }
+        
+        function toggleSpeech() {
+            if (!recognition) {
+                alert('Speech recognition not supported on this device');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch(e) {
+                    alert('Could not start microphone. Please check permissions.');
+                }
+            }
+        }
+        
+        function stopListening() {
+            isListening = false;
+            document.getElementById('micBtn').classList.remove('listening');
+            document.getElementById('speechStatus').textContent = '';
+        }
+        
+        // Get GPS on load
+        window.onload = function() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const coords = position.coords.latitude + ', ' + position.coords.longitude;
+                        document.getElementById('gps').value = coords;
+                        document.getElementById('gpsStatus').className = 'gps-status success';
+                        document.getElementById('gpsStatus').textContent = '📍 ' + coords;
+                    },
+                    function(error) {
+                        document.getElementById('gpsStatus').className = 'gps-status error';
+                        document.getElementById('gpsStatus').textContent = '❌ Location denied. Enable GPS.';
+                    },
+                    {enableHighAccuracy: true, timeout: 10000, maximumAge: 0}
+                );
+            } else {
+                document.getElementById('gpsStatus').className = 'gps-status error';
+                document.getElementById('gpsStatus').textContent = '❌ GPS not supported';
+            }
+        };
+        
+        // Photo preview
+        function previewPhoto(input, num) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview' + num).src = e.target.result;
+                    input.parentElement.classList.add('has-image');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // Convert file to base64
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        // Form submit
+        document.getElementById('surveyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Stop speech if active
+            if (isListening && recognition) {
+                recognition.stop();
+            }
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('surveyForm').style.display = 'none';
+            
+            try {
+                // Get photos as base64
+                const photo1 = document.getElementById('photo1').files[0];
+                const photo2 = document.getElementById('photo2').files[0];
+                const photo3 = document.getElementById('photo3').files[0];
+                const photo4 = document.getElementById('photo4').files[0];
+                
+                const data = {
+                    name: document.getElementById('name').value,
+                    address: document.getElementById('address').value,
+                    village: document.getElementById('village').value,
+                    gps: document.getElementById('gps').value,
+                    mobile1: document.getElementById('mobile1').value,
+                    mobile2: document.getElementById('mobile2').value,
+                    type: document.querySelector('input[name="type"]:checked').value,
+                    comments: document.getElementById('comments').value,
+                    photo1: photo1 ? await getBase64(photo1) : null,
+                    photo2: photo2 ? await getBase64(photo2) : null,
+                    photo3: photo3 ? await getBase64(photo3) : null,
+                    photo4: photo4 ? await getBase64(photo4) : null
+                };
+                
+                // Use XMLHttpRequest for better compatibility
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', SCRIPT_URL, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const result = JSON.parse(xhr.responseText);
+                        if (result.status === 'success') {
+                            document.getElementById('loading').classList.remove('active');
+                            document.getElementById('success').classList.add('active');
+                        } else {
+                            throw new Error(result.message);
+                        }
+                    } else {
+                        throw new Error('Server error: ' + xhr.status);
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    throw new Error('Network error - check internet connection');
+                };
+                
+                xhr.send(JSON.stringify(data));
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('surveyForm').style.display = 'block';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+        
+        function resetForm() {
+            document.getElementById('surveyForm').reset();
+            document.querySelectorAll('.photo-input').forEach(el => el.classList.remove('has-image'));
+            document.querySelectorAll('.photo-preview').forEach(el => el.src = '');
+            document.getElementById('success').classList.remove('active');
+            document.getElementById('surveyForm').style.display = 'block';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('speechStatus').textContent = '';
+            
+            // Refresh GPS
+            window.onload();
+        }
+    </script>
+</body>
+</html>
