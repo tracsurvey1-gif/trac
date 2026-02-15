@@ -22,11 +22,9 @@
         .photo-section { margin-bottom: 20px; }
         .photo-label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; font-size: 14px; }
         
-        /* UPDATED PHOTO INPUT STYLE */
         .photo-input { position: relative; width: 100%; height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; overflow: hidden; }
         .photo-input:hover { border-color: #4CAF50; background: #f8fff8; }
         .photo-input.has-image { border-color: #4CAF50; background: #e8f5e9; }
-        /* Make the input cover the entire div so it catches the click directly */
         .photo-input input { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; z-index: 10; }
         
         .photo-icon { font-size: 32px; margin-bottom: 8px; }
@@ -186,18 +184,17 @@
     </div>
 
     <script>
-        // UPDATED SCRIPT URL
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfBCZOYWucJqrEFpu7STJqYk9fCCr9vSnjPxJg2GdEYFjigNEJ9u0HxHYRhKEc31gsbg/exec';
         
-        // Speech recognition setup
         let recognition = null;
         let isListening = false;
         
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
+            // FIXED: Set continuous to true but interimResults to false
             recognition.continuous = true;
-            recognition.interimResults = true;
+            recognition.interimResults = false; // <--- THIS FIXES THE REPETITION BUG
             recognition.lang = 'en-IN';
             
             recognition.onstart = function() {
@@ -207,17 +204,20 @@
             };
             
             recognition.onresult = function(event) {
-                let finalTranscript = '';
+                // Because interimResults is false, this event only fires when a phrase is DONE.
+                // We loop through the new results and append them.
+                let newText = '';
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        finalTranscript += transcript;
+                        newText += event.results[i][0].transcript;
                     }
                 }
+                
                 const commentsField = document.getElementById('comments');
-                if (finalTranscript) {
+                if (newText) {
                     const currentText = commentsField.value;
-                    commentsField.value = currentText + (currentText ? ' ' : '') + finalTranscript;
+                    // Append with a space if there is already text
+                    commentsField.value = currentText + (currentText.length > 0 ? ' ' : '') + newText;
                 }
             };
             
