@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,12 +45,14 @@
         .success { display: none; text-align: center; padding: 40px; }
         .success.active { display: block; }
         .success-icon { width: 60px; height: 60px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: white; font-size: 32px; }
+        
         .comment-box { position: relative; }
         .mic-btn { position: absolute; bottom: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; border: none; background: #4CAF50; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .mic-btn:hover { background: #45a049; transform: scale(1.05); }
         .mic-btn:active { transform: scale(0.95); }
         .mic-btn.listening { background: #f44336; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); } }
+        
         .mic-hint { font-size: 12px; color: #666; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
         .speech-status { font-size: 12px; color: #4CAF50; margin-top: 4px; height: 18px; }
         .error-msg { color: #f44336; font-size: 12px; margin-top: 4px; display: none; }
@@ -123,7 +125,7 @@
                     <button type="button" class="mic-btn" id="micBtn" onclick="toggleSpeech()" title="Tap to speak">🎤</button>
                 </div>
                 <div class="speech-status" id="speechStatus"></div>
-                <div class="mic-hint">💡 Tap the microphone button to use voice input</div>
+                <div class="mic-hint">💡 Tap microphone to speak (Auto-Language)</div>
             </div>
             
             <div class="photo-section">
@@ -192,20 +194,19 @@
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            // FIXED: Set continuous to true but interimResults to false
             recognition.continuous = true;
-            recognition.interimResults = false; // <--- THIS FIXES THE REPETITION BUG
-            recognition.lang = 'en-IN';
+            recognition.interimResults = false; 
+            
+            // REMOVED 'recognition.lang' SETTING
+            // This forces the browser to use the device's default auto-detect behavior
             
             recognition.onstart = function() {
                 isListening = true;
                 document.getElementById('micBtn').classList.add('listening');
-                document.getElementById('speechStatus').textContent = 'Listening... Speak now';
+                document.getElementById('speechStatus').textContent = 'Listening...';
             };
             
             recognition.onresult = function(event) {
-                // Because interimResults is false, this event only fires when a phrase is DONE.
-                // We loop through the new results and append them.
                 let newText = '';
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     if (event.results[i].isFinal) {
@@ -216,7 +217,6 @@
                 const commentsField = document.getElementById('comments');
                 if (newText) {
                     const currentText = commentsField.value;
-                    // Append with a space if there is already text
                     commentsField.value = currentText + (currentText.length > 0 ? ' ' : '') + newText;
                 }
             };
