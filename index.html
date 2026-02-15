@@ -5,336 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tractor Survey</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        /* Clean Header - Ensures no unwanted text appears here */
-        .header {
-            background: #4CAF50;
-            color: white;
-            padding: 24px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        
-        .form {
-            padding: 24px;
-        }
-        
-        .field {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        input[type="text"],
-        input[type="tel"],
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.2s;
-        }
-        
-        input:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-        
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        
-        .radio-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 8px;
-        }
-        
-        .radio-group label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: normal;
-            cursor: pointer;
-        }
-        
-        input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #4CAF50;
-        }
-        
-        .photo-section {
-            margin-bottom: 20px;
-        }
-        
-        .photo-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-            font-size: 14px;
-        }
-        
-        .photo-input {
-            position: relative;
-            width: 100%;
-            height: 120px;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .photo-input:hover {
-            border-color: #4CAF50;
-            background: #f8fff8;
-        }
-        
-        .photo-input.has-image {
-            border-color: #4CAF50;
-            background: #e8f5e9;
-        }
-        
-        .photo-input input {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-        
-        .photo-icon {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
-        
-        .photo-text {
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .photo-preview {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 6px;
-            display: none;
-        }
-        
-        .photo-input.has-image .photo-preview {
-            display: block;
-        }
-        
-        .photo-input.has-image .photo-icon,
-        .photo-input.has-image .photo-text {
-            display: none;
-        }
-        
-        .gps-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            background: #e3f2fd;
-            color: #1976d2;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-top: 6px;
-        }
-        
-        .gps-status.error {
-            background: #ffebee;
-            color: #c62828;
-        }
-        
-        .gps-status.success {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-top: 10px;
-        }
-        
-        .submit-btn:hover {
-            background: #45a049;
-        }
-        
-        .submit-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px;
-        }
-        
-        .loading.active {
-            display: block;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #e0e0e0;
-            border-top-color: #4CAF50;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .success {
-            display: none;
-            text-align: center;
-            padding: 40px;
-        }
-        
-        .success.active {
-            display: block;
-        }
-        
-        .success-icon {
-            width: 60px;
-            height: 60px;
-            background: #4CAF50;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            color: white;
-            font-size: 32px;
-        }
-        
-        .comment-box {
-            position: relative;
-        }
-        
-        .mic-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: #4CAF50;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .mic-btn:hover {
-            background: #45a049;
-            transform: scale(1.05);
-        }
-        
-        .mic-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .mic-btn.listening {
-            background: #f44336;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
-        }
-        
-        .mic-hint {
-            font-size: 12px;
-            color: #666;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .speech-status {
-            font-size: 12px;
-            color: #4CAF50;
-            margin-top: 4px;
-            height: 18px;
-        }
-        
-        .error-msg {
-            color: #f44336;
-            font-size: 12px;
-            margin-top: 4px;
-            display: none;
-        }
-        
-        .error-msg.show {
-            display: block;
-        }
-        
-        input.invalid {
-            border-color: #f44336;
-            background-color: #fff0f0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: #4CAF50; color: white; padding: 24px; text-align: center; }
+        .header h1 { font-size: 24px; margin-bottom: 8px; }
+        .form { padding: 24px; }
+        .field { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-weight: 500; color: #333; font-size: 14px; }
+        input[type="text"], input[type="tel"], textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.2s; }
+        input:focus, textarea:focus { outline: none; border-color: #4CAF50; }
+        textarea { min-height: 80px; resize: vertical; }
+        .radio-group { display: flex; gap: 20px; margin-top: 8px; }
+        .radio-group label { display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; }
+        input[type="radio"] { width: 18px; height: 18px; accent-color: #4CAF50; }
+        .photo-section { margin-bottom: 20px; }
+        .photo-label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; font-size: 14px; }
+        .photo-input { position: relative; width: 100%; height: 120px; border: 2px dashed #ddd; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .photo-input:hover { border-color: #4CAF50; background: #f8fff8; }
+        .photo-input.has-image { border-color: #4CAF50; background: #e8f5e9; }
+        .photo-input input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .photo-icon { font-size: 32px; margin-bottom: 8px; }
+        .photo-text { color: #666; font-size: 14px; }
+        .photo-preview { position: absolute; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: none; }
+        .photo-input.has-image .photo-preview { display: block; }
+        .photo-input.has-image .photo-icon, .photo-input.has-image .photo-text { display: none; }
+        .gps-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #e3f2fd; color: #1976d2; border-radius: 20px; font-size: 12px; margin-top: 6px; }
+        .gps-status.error { background: #ffebee; color: #c62828; }
+        .gps-status.success { background: #e8f5e9; color: #2e7d32; }
+        .submit-btn { width: 100%; padding: 16px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        .submit-btn:hover { background: #45a049; }
+        .submit-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .loading { display: none; text-align: center; padding: 40px; }
+        .loading.active { display: block; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top-color: #4CAF50; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .success { display: none; text-align: center; padding: 40px; }
+        .success.active { display: block; }
+        .success-icon { width: 60px; height: 60px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: white; font-size: 32px; }
+        .comment-box { position: relative; }
+        .mic-btn { position: absolute; bottom: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; border: none; background: #4CAF50; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .mic-btn:hover { background: #45a049; transform: scale(1.05); }
+        .mic-btn:active { transform: scale(0.95); }
+        .mic-btn.listening { background: #f44336; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); } }
+        .mic-hint { font-size: 12px; color: #666; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+        .speech-status { font-size: 12px; color: #4CAF50; margin-top: 4px; height: 18px; }
+        .error-msg { color: #f44336; font-size: 12px; margin-top: 4px; display: none; }
+        .error-msg.show { display: block; }
+        input.invalid { border-color: #f44336; background-color: #fff0f0; }
     </style>
 </head>
 <body>
@@ -536,14 +255,10 @@
         
         // STRICT MOBILE VALIDATION
         function validateMobile(input) {
-            // Remove any non-numeric characters immediately
             input.value = input.value.replace(/\D/g, '');
-            // Strictly cut off anything after 10 digits
             if (input.value.length > 10) {
                 input.value = input.value.slice(0, 10);
             }
-            
-            // Visual feedback
             const errorEl = document.getElementById(input.id + 'Error');
             if (input.value.length === 10) {
                 input.classList.remove('invalid');
@@ -553,13 +268,11 @@
         
         function checkMobileLength(input, isOptional = false) {
             const errorEl = document.getElementById(input.id + 'Error');
-            
             if (isOptional && input.value.length === 0) {
                 input.classList.remove('invalid');
                 errorEl.classList.remove('show');
                 return true;
             }
-            
             if (input.value.length !== 10) {
                 input.classList.add('invalid');
                 errorEl.classList.add('show');
@@ -571,7 +284,7 @@
             }
         }
         
-        // Get GPS on load
+        // Get GPS
         window.onload = function() {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
@@ -609,7 +322,6 @@
         document.getElementById('surveyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Validate mobile numbers strictly before starting
             const m1 = document.getElementById('mobile1');
             const m2 = document.getElementById('mobile2');
             
@@ -618,14 +330,12 @@
                 m1.focus();
                 return;
             }
-            
             if (m2.value.length > 0 && !checkMobileLength(m2, true)) {
                 alert('Mobile Number 2 must be exactly 10 digits.');
                 m2.focus();
                 return;
             }
             
-            // Stop speech if active
             if (isListening && recognition) {
                 recognition.stop();
             }
@@ -635,7 +345,6 @@
             document.getElementById('surveyForm').style.display = 'none';
             
             try {
-                // Compress photos
                 const photo1 = await compressImage(document.getElementById('photo1').files[0]);
                 const photo2 = await compressImage(document.getElementById('photo2').files[0]);
                 const photo3 = await compressImage(document.getElementById('photo3').files[0]);
@@ -656,16 +365,17 @@
                     photo4: photo4
                 };
                 
-                // Add Timeout to Fetch to prevent "Keeping Loading" forever
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
 
+                // FIX FOR CORS ERROR:
+                // We must use 'text/plain' as content type to avoid Preflight (OPTIONS) check.
+                // Google Apps Script will still receive the body as a string.
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'cors',
                     signal: controller.signal,
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain;charset=utf-8', 
                     },
                     body: JSON.stringify(data)
                 });
@@ -702,7 +412,6 @@
             }
         });
         
-        // Compress image with error handling
         function compressImage(file) {
             return new Promise((resolve, reject) => {
                 if (!file) {
@@ -717,7 +426,6 @@
                     img.src = event.target.result;
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        // Reduced max dimension to 1024 for faster upload
                         const MAX_WIDTH = 1024;
                         const MAX_HEIGHT = 1024;
                         let width = img.width;
@@ -739,20 +447,12 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // Compress to 70% quality JPEG
                         const compressed = canvas.toDataURL('image/jpeg', 0.7);
                         resolve(compressed);
                     };
-                    img.onerror = () => {
-                        console.error("Image load error");
-                        resolve(null); // Resolve null rather than crash
-                    };
+                    img.onerror = () => resolve(null);
                 };
-                reader.onerror = error => {
-                    console.error("File read error");
-                    reject(error);
-                };
+                reader.onerror = error => reject(error);
             });
         }
         
@@ -766,8 +466,6 @@
             document.getElementById('surveyForm').style.display = 'block';
             document.getElementById('submitBtn').disabled = false;
             document.getElementById('speechStatus').textContent = '';
-            
-            // Refresh GPS
             window.onload();
         }
     </script>
